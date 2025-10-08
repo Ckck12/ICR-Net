@@ -52,6 +52,8 @@ conda activate icr-net
 # Install dependencies
 pip install -r requirements.txt
 ```
+### Make Corrupted Dataset
+1. follow the code : make_corruption_original.py, make_packet_loss_corruption.py
 
 ### Data Preparation
 
