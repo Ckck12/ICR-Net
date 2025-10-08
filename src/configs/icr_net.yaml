@@ -1,0 +1,93 @@
+# ICR-Net Configuration
+# Integrity-aware Contrastive Residual Network for Deepfake Detection
+
+# Model settings
+model_name: icr_net
+video_mode: true
+clip_size: 16
+clip_stride: 8
+feature_dim: 512
+gru_hidden_dim: 512
+proj_dim: 256
+
+# ICR-Net loss weights
+lambda_cls: 1.0        # Classification loss weight
+lambda_pred: 1.0      # Prediction loss weight (world model consistency)
+lambda_con: 0.5       # Contrastive loss weight
+lambda_sc: 0.01       # Selective correction regularization weight
+contrastive_temperature: 0.1  # Contrastive learning temperature
+
+# Dataset paths (ICR-Net requires both clean and corrupt data)
+clean_data_path: /path/to/clean/data
+corrupt_data_path: /path/to/corrupt/data
+
+# Dataset settings
+train_batchSize: 8
+test_batchSize: 16
+workers: 8
+frame_num: {'train': 16, 'test': 16}
+resolution: 224
+with_mask: false
+with_landmark: false
+
+# Data augmentation
+use_data_augmentation: true
+data_aug:
+  flip_prob: 0.5
+  rotate_prob: 0.0
+  rotate_limit: [-10, 10]
+  blur_prob: 0.3
+  blur_limit: [3, 7]
+  brightness_prob: 0.3
+  brightness_limit: [-0.1, 0.1]
+  contrast_limit: [-0.1, 0.1]
+  quality_lower: 40
+  quality_upper: 100
+
+# Normalization
+mean: [0.485, 0.456, 0.406]  # ImageNet normalization
+std: [0.229, 0.224, 0.225]
+
+# Optimizer config
+optimizer:
+  type: adam
+  adam:
+    lr: 0.0001
+    beta1: 0.9
+    beta2: 0.999
+    eps: 0.00000001
+    weight_decay: 0.0001
+    amsgrad: false
+  sgd:
+    lr: 0.0001
+    momentum: 0.9
+    weight_decay: 0.0001
+
+# Training config
+lr_scheduler: cosine
+lr_T_max: 50
+lr_eta_min: 0.00001
+nEpochs: 50
+start_epoch: 0
+save_epoch: 5
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+save_ckpt: true
+save_feat: true
+
+# Loss function (ICR-Net uses custom loss)
+loss_func: null
+losstype: null
+
+# Metric
+metric_scoring: auc
+
+# CUDA
+cuda: true
+cudnn: true
+
+# ICR-Net specific training parameters
+corruption_types: ['bit_error', 'h264_crf', 'h264_abr', 'h265_crf', 'h265_abr', 'motion_blur', 'packet_loss']
+corruption_severities: [1, 3, 5]
+pair_sampling_strategy: 'balanced'  # 'balanced' or 'random'
