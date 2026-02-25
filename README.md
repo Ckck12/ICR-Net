@@ -1,4 +1,6 @@
-# Are Deepfake Detectors Robust to Temporal Corruption?
+# ICR-NET: Robust Deepfake Detection under Temporal Corruption
+
+## Are Deepfake Detectors Robust to Temporal Corruption?
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/pytorch-1.9+-red.svg)](https://pytorch.org/)
