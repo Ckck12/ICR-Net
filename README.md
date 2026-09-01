@@ -30,7 +30,7 @@ This yields corruption-invariant, class-separable features and strong cross-data
 ## Motivation: Temporal Corruption in Streaming
 
 <p align="center">
-  <img src="assets/figure1_scenario.jpg" alt="Deepfake videos with temporal corruptions in a real-world streaming scenario" width="92%">
+  <img src="assets/figure1_scenario.png" alt="Deepfake videos with temporal corruptions in a real-world streaming scenario" width="92%">
 </p>
 <p align="center"><em>Figure 1. Deepfake videos with temporal corruptions in the real-world scenario. Unstable web streaming can degrade frames and cause existing detectors to fail.</em></p>
 
