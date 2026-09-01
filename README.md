@@ -3,7 +3,6 @@
 **Are Deepfake Detectors Robust to Temporal Corruption?**
 
 Chan Park, Hyeongjun Choi, Muhammad Shahid Muneer, Binh Minh Le, Simon S. Woo\*  
-College of Computing and Informatics, Sungkyunkwan University, Suwon, South Korea  
 `{pchan1018, junhjun, shahidmuneer, bmle, swoo}@g.skku.edu`
 
 <p align="center">
