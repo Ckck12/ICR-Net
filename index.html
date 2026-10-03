@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ICR-Net: Robust Deepfake Detection under Temporal Corruption</title>
+  <meta name="description" content="ICR-Net and the DF-TCB benchmark for deepfake detection under temporal corruption (PAKDD 2026).">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #0B6E4F;
+      --accent-hover: #08563E;
+      --tint: #EAF4EF;
+      --tint-strong: #D5EBE1;
+      --text: #1a1a1a;
+      --muted: #5c5c5c;
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --border: #e6e6e6;
+      --hero-bg: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    /* Hero */
+    .hero {
+      background: var(--hero-bg);
+      color: var(--text);
+      padding: 40px 24px 48px;
+      text-align: center;
+      border-bottom: 4px solid var(--accent);
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .brand-copy {
+      line-height: 1.25;
+      padding: 0 0 0 12px;
+      border-left: 4px solid var(--accent);
+      text-align: left;
+    }
+    .brand-copy strong {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+    }
+    .brand-copy span {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .brand-copy a { color: inherit; }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text);
+    }
+    .hero .authors {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .hero .author-name {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .hero .authors sup { font-size: 0.7em; color: var(--text); }
+    .hero .affiliations {
+      margin: 0 0 10px;
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .hero .subtitle {
+      margin: 0 0 28px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .badge:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    /* Layout */
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+    main { padding: 40px 0 64px; }
+
+    /* Nav */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .nav-bar ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      list-style: none;
+      margin: 0;
+      padding: 12px 24px;
+      max-width: 960px;
+      margin-inline: auto;
+      font-size: 0.9rem;
+    }
+    .nav-bar a { color: var(--muted); font-weight: 500; text-decoration: none; }
+    .nav-bar a:hover { color: var(--accent); }
+
+    /* Sections */
+    section { margin-bottom: 48px; scroll-margin-top: 56px; }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      letter-spacing: -0.01em;
+    }
+    h3 { font-size: 1.05rem; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .abstract-text {
+      font-size: 0.97rem;
+      color: var(--text);
+      line-height: 1.7;
+      text-align: justify;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+    .tldr {
+      border-left: 4px solid var(--accent);
+    }
+    .setup-list {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .setup-list li { margin-bottom: 8px; }
+    .setup-list li:last-child { margin-bottom: 0; }
+    code {
+      font-size: 0.88em;
+      background: var(--tint);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .math {
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.02em;
+    }
+    pre.code {
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      background: #f7f7f7;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      overflow-x: auto;
+    }
+    pre.code code { background: none; padding: 0; }
+
+    /* Figures */
+    figure.fig {
+      margin: 0 0 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    figure.fig img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 6px;
+    }
+    figure.fig.narrow img { max-width: 640px; width: 100%; }
+    figure.fig figcaption {
+      margin-top: 12px;
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.55;
+      text-align: left;
+    }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table.results {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 0.86rem;
+    }
+    table.results th, table.results td {
+      border: 1px solid var(--border);
+      padding: 7px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    table.results thead th { background: var(--accent); color: #fff; font-weight: 600; border-color: var(--accent-hover); }
+    table.results tbody th { background: var(--tint); font-weight: 600; text-align: left; }
+    table.results td:first-child,
+    table.results th:first-child { text-align: left; }
+    table.results tr.group td {
+      background: var(--tint);
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    table.results thead th { white-space: normal; line-height: 1.3; }
+    table.results tr.ours td { background: var(--tint-strong); }
+    table.results tr.ours td:first-child { font-weight: 700; }
+    table.results.flags td:first-child { text-align: center; }
+    .table-caption {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .table-notes {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 4px solid var(--accent);
+      padding: 36px 24px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: var(--surface);
+    }
+    footer a { color: var(--accent); }
+    footer a:hover { color: var(--accent-hover); }
+    footer p { margin: 0 0 6px; }
+    .footer-brand {
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 640px) {
+      .hero { padding: 32px 16px 40px; }
+      .container { padding: 0 16px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand-row">
+        <div class="brand-copy">
+          <strong><a href="https://dash-lab.github.io/" target="_blank" rel="noopener">DASH Lab</a></strong>
+          <span>Sungkyunkwan University</span>
+        </div>
+      </div>
+      <h1>ICR-Net: Robust Deepfake Detection<br>under Temporal Corruption</h1>
+      <p class="authors">
+        <span class="author-name">Chan Park</span>,
+        <span class="author-name">Hyeongjun Choi</span>,
+        <span class="author-name">Muhammad Shahid Muneer</span>,<br>
+        <span class="author-name">Binh Minh Le</span>,
+        <span class="author-name">Simon S. Woo</span><sup>*</sup>
+      </p>
+      <p class="affiliations">
+        College of Computing and Informatics, Sungkyunkwan University, Suwon, South Korea
+        <br>* Corresponding author
+      </p>
+      <p class="subtitle">
+        <a href="https://pakdd2026.org/" target="_blank" rel="noopener">PAKDD 2026</a> &nbsp;·&nbsp;
+        The 30th Pacific-Asia Conference on Knowledge Discovery and Data Mining
+      </p>
+      <div class="badges">
+        <a class="badge" href="paper.pdf">Paper (PDF)</a>
+        <a class="badge" href="https://doi.org/10.1007/978-981-92-1465-5_24" target="_blank" rel="noopener">DOI</a>
+        <a class="badge" href="https://github.com/Ckck12/ICR-Net" target="_blank" rel="noopener">Code</a>
+        <a class="badge" href="#citation">BibTeX</a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-bar">
+    <ul>
+      <li><a href="#tldr">TL;DR</a></li>
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#benchmark">DF-TCB</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#ablation">Ablation</a></li>
+      <li><a href="#citation">Citation</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <main>
+
+      <section id="tldr">
+        <h2>TL;DR</h2>
+        <div class="card tldr">
+          <p>
+            Streaming artifacts such as packet loss, bit errors, and aggressive compression corrupt deepfake videos over time
+            and break existing detectors. We build <strong>DF-TCB</strong> to measure this, and propose <strong>ICR-Net</strong>,
+            which scores per-frame integrity, corrects low-integrity frame embeddings, and aligns clean and corrupted views with
+            contrastive learning.
+          </p>
+          <ul class="setup-list">
+            <li><strong>DF-TCB:</strong> eight temporal corruption types at three severity levels on FaceForensics++ and DFDC, giving the corrupted splits FF++-C and DFDC-C.</li>
+            <li><strong>Existing detectors are fragile:</strong> trained on clean FF++, FTCN drops by 38.72% from its 99.65% clean accuracy on FF++-C, and on DFDC-C all nine detectors fall to nearly 50% accuracy (Sec. 3.4, Fig. 3).</li>
+            <li><strong>ICR-Net:</strong> under corruption-aware training it keeps 97.86% on clean FF++, has the highest accuracy on 7 of the 8 FF++-C corruption types (Table 1), and on all 8 DFDC-C corruption types (Table 2).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="abstract">
+        <h2>Abstract</h2>
+        <div class="card">
+          <p class="abstract-text">Deepfake video detection aims to distinguish AI-generated facial forgeries from authentic videos. While recent methods show strong performance under spatial corruptions, their robustness against temporal corruptions remains largely unexplored. In practical streaming scenarios, network disruptions such as packet loss, bit errors, and aggressive compression induce temporal degradations that current benchmarks do not cover. To bridge this gap, we introduce the DeepFake Temporal Corruption Benchmark (DF-TCB), built on FaceForensics++ and DFDC datasets with diverse corruption types and severities. Our analysis reveals that existing detectors are highly fragile under these disruptions. We therefore propose ICR-Net, which predicts frame reliability and selectively corrects corrupted features. By leveraging clean-corrupted contrastive learning, it extracts corruption-invariant, class-separable representations. We demonstrate that ICR-Net improves robustness and cross-dataset generalization under diverse temporal corruptions.</p>
+        </div>
+      </section>
+
+      <section id="motivation">
+        <h2>Motivation: Temporal Corruption in Streaming</h2>
+        <figure class="fig narrow">
+          <img src="assets/figure1_scenario.png" alt="Deepfake video degraded by unstable web streaming; examples of eight temporal corruption types" loading="lazy">
+          <figcaption><strong>Fig. 1.</strong> Deepfake videos with temporal corruptions in the real-world scenario.</figcaption>
+        </figure>
+        <div class="card">
+          <p>Existing detectors have been evaluated mainly against spatial corruptions. The paper asks three questions:</p>
+          <ul class="setup-list">
+            <li><strong>RQ1.</strong> How susceptible are current deepfake detectors to temporal corruptions?</li>
+            <li><strong>RQ2.</strong> How do these corruptions impact cross-dataset generalization?</li>
+            <li><strong>RQ3.</strong> How can we architect a framework that achieves temporal resilience without compromising clean-video accuracy?</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="benchmark">
+        <h2>DF-TCB: DeepFake Temporal Corruption Benchmark</h2>
+        <figure class="fig">
+          <img src="assets/figure2_dftcb.png" alt="Overview of DF-TCB: corruption types and severities, consecutive and distributed corrupted frames" loading="lazy">
+          <figcaption><strong>Fig. 2.</strong> Overview of the proposed DF-TCB. Based on the real and five manipulation types in FF++, we introduce (a) eight temporal corruption types, and evaluate scenarios with (b) consecutive and (c) distributed corrupted frames.</figcaption>
+        </figure>
+        <p class="table-caption">Temporal corruptions and severity levels (L1 / L2 / L3)</p>
+        <div class="table-wrap">
+          <table class="results">
+            <thead>
+              <tr><th>Corruption</th><th>What it simulates</th><th>Severity L1 / L2 / L3</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Black Frame</strong></td><td style="text-align:left; white-space:normal;">Transient signal loss; selected frames replaced with all-black pixels</td><td>8 / 16 / 24 frames</td></tr>
+              <tr><td><strong>Motion Blur</strong></td><td style="text-align:left; white-space:normal;">Fast-motion artifacts, temporally averaged over a sliding window</td><td>window 3 / 7 / 13</td></tr>
+              <tr><td><strong>Packet Loss</strong></td><td style="text-align:left; white-space:normal;">Network drops simulated via a virtual link</td><td>drop rate 1% / 3% / 5%</td></tr>
+              <tr><td><strong>Bit Error</strong></td><td style="text-align:left; white-space:normal;">Bitstream corruption (blocking, smearing) simulated by bit flips</td><td>1 per 100,000 / 30,000 / 10,000</td></tr>
+              <tr><td><strong>H.264 CRF</strong></td><td style="text-align:left; white-space:normal;">H.264 compression with Constant Rate Factor (libx264)</td><td>CRF 23 / 37 / 51</td></tr>
+              <tr><td><strong>H.264 ABR</strong></td><td style="text-align:left; white-space:normal;">H.264 compression with Average Bitrate</td><td>1/2, 1/8, 1/32 of original bitrate</td></tr>
+              <tr><td><strong>H.265 CRF</strong></td><td style="text-align:left; white-space:normal;">HEVC counterpart of H.264 CRF</td><td>CRF 27 / 39 / 51</td></tr>
+              <tr><td><strong>H.265 ABR</strong></td><td style="text-align:left; white-space:normal;">HEVC counterpart of H.264 ABR</td><td>1/2, 1/8, 1/32 of original bitrate</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-notes">
+          Clips have 32 frames, sampled with a fixed stride of 8. By default, 16 consecutive frames in each 32-frame clip are corrupted.
+          Packet Loss is simulated over a controlled Mininet topology with UDP transport. The codec-based corruptions, Bit Error, and Motion Blur are produced with FFmpeg.
+          FF++-C follows the official FF++ protocol (intra-dataset), and DFDC-C corrupts the DFDC test set (cross-dataset).
+        </p>
+
+        <h3 style="margin-top: 32px;">How robust are existing detectors?</h3>
+        <figure class="fig">
+          <img src="assets/fig3_detector_robustness.png" alt="Bar charts of clean versus corrupted accuracy for nine detectors on FF++ and DFDC" loading="lazy">
+          <figcaption><strong>Fig. 3.</strong> Robustness of existing detectors against temporal corruptions.
+            Six frame-based (#) and three video-based (*) detectors are trained on clean FF++ and evaluated intra-dataset (FF++ / FF++-C, top) and cross-dataset (DFDC / DFDC-C, bottom).
+            Red labels give the accuracy drop from clean to corrupted video.</figcaption>
+        </figure>
+        <div class="card">
+          <p style="margin:0;">
+            All detectors are close to perfect on clean FF++ but degrade sharply under temporal corruption. Among frame-based methods, Effort shows the largest average decline (22.48%).
+            The video-based FTCN drops by 38.72% from its 99.65% clean accuracy. Cross-dataset, the models reach 64.76–84.15% accuracy on clean DFDC,
+            but even mild temporal corruptions reduce all of them to nearly 50% on DFDC-C.
+          </p>
+        </div>
+      </section>
+
+      <section id="method">
+        <h2>ICR-Net</h2>
+        <figure class="fig">
+          <img src="assets/figure4_icrnet.png" alt="ICR-Net architecture: paired encoding, temporal integrity and correction, contrastive alignment, classification" loading="lazy">
+          <figcaption><strong>Fig. 4.</strong> Overview of our ICR-Net framework for temporal robustness.</figcaption>
+        </figure>
+        <div class="card">
+          <ul class="setup-list">
+            <li><strong>Step 1: paired encoding.</strong> Clean and corrupted versions of real and fake clips pass through a shared spatial encoder <span class="math">E<sub>S</sub></span>, giving frame embeddings <span class="math">S = [s<sub>1</sub>, …, s<sub>T</sub>]</span>.</li>
+            <li><strong>Step 2: temporal integrity and correction.</strong> A GRU predicts <span class="math">ŝ<sub>t</sub></span> from the preceding frames. The prediction error <span class="math">e<sub>t</sub> = s<sub>t</sub> − ŝ<sub>t</sub></span> gives an integrity score <span class="math">α<sub>t</sub> = exp(−λ<sub>α</sub>‖e<sub>t</sub>‖<sub>2</sub>)</span>.
+              A parallel 1D-CNN estimates a residual <span class="math">r<sub>t</sub></span>, fused by integrity gating <span class="math">s̃<sub>t</sub> = (1 − α<sub>t</sub>) r<sub>t</sub> + s<sub>t</sub></span>, so corrections go mainly to low-integrity frames and reliable frames keep their forensic cues.</li>
+            <li><strong>Step 3: contrastive alignment.</strong> An InfoNCE-style loss treats the clean and corrupted views of the same video as positives and the two views of the opposite label in the same quartet as negatives. This yields corruption-invariant, class-separable features.</li>
+            <li><strong>Step 4: classification.</strong> A linear classifier on the pooled, refined clip feature is trained with binary cross-entropy.</li>
+            <li><strong>Objective:</strong> <span class="math">L = λ<sub>1</sub>L<sub>pred</sub> + λ<sub>2</sub>L<sub>reg</sub> + λ<sub>3</sub>L<sub>con</sub> + λ<sub>4</sub>L<sub>cls</sub></span> with λ<sub>1</sub> = 1.0, λ<sub>2</sub> = 0.01, λ<sub>3</sub> = 0.5, λ<sub>4</sub> = 1.0 in all experiments.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="results">
+        <h2>Quantitative Results</h2>
+        <p class="table-caption">TABLE 1 &nbsp;·&nbsp; Intra-dataset temporal corruption robustness of deepfake detectors (FF++ / FF++-C).</p>
+        <div class="table-wrap">
+          <table class="results">
+            <thead>
+              <tr><th>Model</th><th>Clean</th><th>Black Frame</th><th>Motion Blur</th><th>Packet Loss</th><th>Bit Error</th><th>H.264 CRF</th><th>H.264 ABR</th><th>H.265 CRF</th><th>H.265 ABR</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><td colspan="10">Frame-based</td></tr>
+              <tr><td>FFD</td><td>98.14</td><td>85.89</td><td>91.23</td><td><u>90.98</u></td><td>90.83</td><td><u>91.80</u></td><td>88.70</td><td>91.44</td><td>90.63</td></tr>
+              <tr><td>F3-Net</td><td>98.10</td><td>85.84</td><td>88.16</td><td>90.22</td><td>90.47</td><td>90.47</td><td>88.33</td><td>89.21</td><td><u>92.05</u></td></tr>
+              <tr><td>SPSL</td><td><strong>98.29</strong></td><td>84.76</td><td>91.24</td><td>86.94</td><td>91.84</td><td>85.64</td><td>85.31</td><td>91.89</td><td>91.81</td></tr>
+              <tr><td>SRM</td><td>97.87</td><td>86.11</td><td>88.27</td><td>90.85</td><td><u>92.09</u></td><td>91.45</td><td>91.17</td><td>90.04</td><td>90.21</td></tr>
+              <tr><td>CORE</td><td><u>98.27</u></td><td>85.23</td><td>85.14</td><td>90.18</td><td>91.43</td><td>86.22</td><td>87.93</td><td>89.10</td><td>90.66</td></tr>
+              <tr><td>Effort</td><td>94.40</td><td>84.36</td><td>85.52</td><td>86.75</td><td>87.26</td><td>85.80</td><td>85.61</td><td>85.52</td><td>86.67</td></tr>
+              <tr class="group"><td colspan="10">Video-based</td></tr>
+              <tr><td>FTCN</td><td>87.62</td><td>86.37</td><td>82.64</td><td>82.97</td><td>82.65</td><td>83.48</td><td>83.69</td><td>83.69</td><td>83.54</td></tr>
+              <tr><td>STIL</td><td>97.35</td><td>86.00</td><td><u>91.31</u></td><td>86.83</td><td>89.58</td><td>88.35</td><td>89.15</td><td>92.16</td><td>89.28</td></tr>
+              <tr><td>AltFreezing</td><td>97.21</td><td><u>91.54</u></td><td>90.71</td><td>85.73</td><td>90.77</td><td>89.40</td><td><strong>94.58</strong></td><td><u>92.55</u></td><td>90.47</td></tr>
+              <tr class="ours"><td>ICR-Net (ours)</td><td>97.86</td><td><strong>94.92</strong></td><td><strong>94.88</strong></td><td><strong>96.03</strong></td><td><strong>96.67</strong></td><td><strong>96.55</strong></td><td><u>92.93</u></td><td><strong>97.50</strong></td><td><strong>95.83</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="table-caption" style="margin-top: 36px;">TABLE 2 &nbsp;·&nbsp; Cross-dataset temporal corruption robustness of deepfake detectors (DFDC / DFDC-C).</p>
+        <div class="table-wrap">
+          <table class="results">
+            <thead>
+              <tr><th>Model</th><th>Clean</th><th>Black Frame</th><th>Motion Blur</th><th>Packet Loss</th><th>Bit Error</th><th>H.264 CRF</th><th>H.264 ABR</th><th>H.265 CRF</th><th>H.265 ABR</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><td colspan="10">Frame-based</td></tr>
+              <tr><td>FFD</td><td>61.41</td><td>50.32</td><td>50.12</td><td>50.49</td><td>50.22</td><td>50.38</td><td>50.19</td><td>51.02</td><td>49.73</td></tr>
+              <tr><td>F3-Net</td><td>72.02</td><td>49.93</td><td>49.77</td><td>50.01</td><td>49.92</td><td>50.13</td><td>49.68</td><td>49.33</td><td>49.59</td></tr>
+              <tr><td>SPSL</td><td>72.15</td><td>50.41</td><td>50.18</td><td>50.25</td><td>49.97</td><td>50.03</td><td>49.83</td><td>50.31</td><td>50.28</td></tr>
+              <tr><td>SRM</td><td>69.91</td><td>50.11</td><td>50.34</td><td>49.95</td><td>50.21</td><td>49.87</td><td>49.72</td><td>49.54</td><td>49.61</td></tr>
+              <tr><td>CORE</td><td>71.28</td><td>50.23</td><td>49.91</td><td>50.17</td><td>50.33</td><td>49.88</td><td>49.52</td><td>49.78</td><td>49.44</td></tr>
+              <tr><td>Effort</td><td><strong>79.85</strong></td><td><u>55.13</u></td><td><u>54.88</u></td><td><u>54.02</u></td><td><u>54.71</u></td><td><u>54.96</u></td><td><u>53.87</u></td><td>55.43</td><td><u>53.69</u></td></tr>
+              <tr class="group"><td colspan="10">Video-based</td></tr>
+              <tr><td>FTCN</td><td>61.21</td><td>53.11</td><td>52.89</td><td>53.39</td><td>54.12</td><td>53.02</td><td>52.07</td><td>53.34</td><td>53.55</td></tr>
+              <tr><td>STIL</td><td>67.71</td><td>49.15</td><td>49.98</td><td>48.50</td><td>50.05</td><td>48.61</td><td>48.01</td><td>50.24</td><td>49.82</td></tr>
+              <tr><td>AltFreezing</td><td>72.95</td><td>51.82</td><td>50.73</td><td>51.23</td><td>50.15</td><td>51.35</td><td>49.22</td><td><u>57.11</u></td><td>51.47</td></tr>
+              <tr class="ours"><td>ICR-Net (ours)</td><td><u>78.56</u></td><td><strong>58.14</strong></td><td><strong>59.23</strong></td><td><strong>59.51</strong></td><td><strong>58.98</strong></td><td><strong>59.12</strong></td><td><strong>57.98</strong></td><td><strong>59.88</strong></td><td><strong>58.33</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-notes">
+          Video-level accuracy (ACC, %). All baselines and ICR-Net use the same corruption-aware training: each training video contributes a clean clip
+          and a clip with a single temporal corruption at severity level 3. Corrupted columns are the mean accuracy across the three severity levels.
+          <strong>Bold</strong> = best, <u>underline</u> = second best, as marked in the paper.
+        </p>
+      </section>
+
+      <section id="ablation">
+        <h2>Ablation of Training Objectives</h2>
+        <p class="table-caption">TABLE 3 &nbsp;·&nbsp; Ablation study of loss components in ICR-Net.</p>
+        <div class="table-wrap">
+          <table class="results flags" style="max-width: 560px;">
+            <thead>
+              <tr><th>L<sub>pred</sub></th><th>L<sub>reg</sub></th><th>L<sub>con</sub></th><th>Clean</th><th>Corrupted</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>×</td><td>×</td><td>×</td><td>91.57</td><td>86.38</td></tr>
+              <tr><td>✓</td><td>×</td><td>×</td><td>96.50</td><td>88.38</td></tr>
+              <tr><td>×</td><td>✓</td><td>×</td><td>82.54</td><td>77.61</td></tr>
+              <tr><td>×</td><td>×</td><td>✓</td><td>95.31</td><td>85.20</td></tr>
+              <tr><td>✓</td><td>✓</td><td>×</td><td>97.33</td><td>89.96</td></tr>
+              <tr><td>×</td><td>✓</td><td>✓</td><td>84.33</td><td>78.14</td></tr>
+              <tr><td>✓</td><td>×</td><td>✓</td><td>96.55</td><td>91.15</td></tr>
+              <tr class="ours"><td>✓</td><td>✓</td><td>✓</td><td><strong>97.86</strong></td><td><strong>95.67</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-notes">
+          Row 1 (classification loss L<sub>cls</sub> only) is the baseline. The full model (last row) reaches 97.86% on clean and 95.67% on corrupted data.
+          L<sub>reg</sub> alone hurts accuracy, because the model can trivially minimize the integrity scores.
+        </p>
+      </section>
+
+      <section id="citation">
+        <h2>Citation</h2>
+        <div class="card">
+          <p>If you find this work useful, please cite:</p>
+          <pre style="margin: 0; font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; color: var(--muted);">@inproceedings{park2026icrnet,
+  title     = {{ICR-Net}: Robust Deepfake Detection under Temporal Corruption},
+  author    = {Park, Chan and Choi, Hyeongjun and Muneer, Muhammad Shahid
+               and Le, Binh Minh and Woo, Simon S.},
+  booktitle = {Proceedings of the 30th Pacific-Asia Conference on Knowledge
+               Discovery and Data Mining (PAKDD 2026)},
+  year      = {2026},
+  doi       = {10.1007/978-981-92-1465-5_24}
+}</pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-brand">DASH Lab · Sungkyunkwan University</div>
+    <p>
+      <a href="https://dash-lab.github.io/" target="_blank" rel="noopener">Data-driven AI Security HCI Lab (DASH Lab)</a>,
+      College of Computing and Informatics, Sungkyunkwan University
+    </p>
+    <p>
+      <a href="https://pakdd2026.org/" target="_blank" rel="noopener">PAKDD 2026</a> · The 30th Pacific-Asia Conference on Knowledge Discovery and Data Mining
+    </p>
+    <p>
+      DOI: <a href="https://doi.org/10.1007/978-981-92-1465-5_24" target="_blank" rel="noopener">10.1007/978-981-92-1465-5_24</a>
+      &nbsp;·&nbsp;
+      Code: <a href="https://github.com/Ckck12/ICR-Net" target="_blank" rel="noopener">github.com/Ckck12/ICR-Net</a>
+    </p>
+  </footer>
+
+</body>
+</html>
